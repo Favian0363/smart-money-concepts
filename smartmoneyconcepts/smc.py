@@ -68,24 +68,24 @@ class smc:
         Bottom = the bottom of the fair value gap
         MitigatedIndex = the index of the candle that mitigated the fair value gap
         """
-
+        is_bullish = ohlc["close"] > ohlc["open"] # ++clarity, --redundancy
         fvg = np.where(
             (
                 (ohlc["high"].shift(1) < ohlc["low"].shift(-1))
-                & (ohlc["close"] > ohlc["open"])
+                & (is_bullish)
             )
             | (
                 (ohlc["low"].shift(1) > ohlc["high"].shift(-1))
                 & (ohlc["close"] < ohlc["open"])
             ),
-            np.where(ohlc["close"] > ohlc["open"], 1, -1),
+            np.where(is_bullish, 1, -1),
             np.nan,
         )
 
         top = np.where(
             ~np.isnan(fvg),
             np.where(
-                ohlc["close"] > ohlc["open"],
+                is_bullish,
                 ohlc["low"].shift(-1),
                 ohlc["low"].shift(1),
             ),
@@ -95,7 +95,7 @@ class smc:
         bottom = np.where(
             ~np.isnan(fvg),
             np.where(
-                ohlc["close"] > ohlc["open"],
+                is_bullish,
                 ohlc["high"].shift(1),
                 ohlc["high"].shift(-1),
             ),
